@@ -28,6 +28,10 @@ class Model {
         localStorage.setItem('uid_const',parseInt(localStorage.getItem('uid_const'))+1);
     }
 
+    getToDos(){
+
+    }
+
     //delete todo
     deleteToDo(){
     }
@@ -42,22 +46,38 @@ class Model {
 class View {
     constructor() {
         let todoName =  document.createElement('input');
+        let todoName_label = document.createElement('span');
+            todoName_label.innerText = 'To Do Name:';
             todoName.id = 'todo_header';
             todoName.placeholder = 'Your todo item header';
             todoName.title = 'Please insert todo item header to here!';
+            //
             document.body.appendChild(todoName);
+            document.body.insertBefore(todoName_label, todoName);
 
+            //
+            document.body.appendChild(document.createElement('br'));
+            //
         let todoInfo =  document.createElement('textarea');
+        let todoInfo_label = document.createElement('span');
+            todoInfo_label.innerText = 'To Do Information:';
             todoInfo.id = 'todo_info';
             todoInfo.placeholder = 'Your todo item details';
             todoInfo.title = 'Please insert todo detailed information here';
             document.body.appendChild(todoInfo);
+            document.body.insertBefore(todoInfo_label,todoInfo);
+        //
+        document.body.appendChild(document.createElement('br'));
+        //
 
         let addToDoButton = document.createElement('button');
             addToDoButton.id = 'add_todo_button';
             addToDoButton.type = 'button';
             addToDoButton.innerText = 'Add ToDo';
             document.body.appendChild(addToDoButton);
+        //
+        document.body.appendChild(document.createElement('br'));
+        //
 
         this.todoName = todoName;
         this.todoInfo = todoInfo;
@@ -71,7 +91,7 @@ class View {
     }
     bindAddToDo(handlerx){
         this.addToDoButton.addEventListener('click',()=>{
-            handlerx({header:this._thisName, info:this._thisInfo});
+             handlerx({header:this._thisName, info:this._thisInfo});
         });
     }
 }
@@ -79,10 +99,9 @@ class Controller {
     constructor(model, view) {
         this.model = model;
         this.view = view;
-        this.view.bindAddToDo(this.handleAddTodo);
+        this.view.bindAddToDo((tobj) => {this.model.addToDo(tobj)});
     }
 
-    handleAddTodo = (tobj) => {this.model.addToDo(tobj)};
 
 
 }
