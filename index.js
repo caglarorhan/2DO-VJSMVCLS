@@ -26,7 +26,8 @@ class Model {
         this.todos.push(todo);
         localStorage.setItem('myToDos', JSON.stringify(this.todos));
         localStorage.setItem('uid_const',parseInt(localStorage.getItem('uid_const'))+1);
-        this.reRefreshToDoList(this.getToDos());
+        this.reRefreshToDoList();
+        this.reRefreshBindDeleteToDo();
         return true;
     }
 
@@ -62,7 +63,8 @@ class Model {
             let a_2 = this.todos.slice(todoIndex+1, this.todos.length);
             this.todos = a_1.concat(a_2);
             localStorage.setItem('myToDos', JSON.stringify(this.todos));
-            this.reRefreshToDoList(this.getToDos());
+            this.reRefreshToDoList();
+            this.reRefreshBindDeleteToDo();
             return true;
         }else{
             return false;
@@ -76,6 +78,12 @@ class Model {
 
     bindRefreshToDoList(callback){
         this.reRefreshToDoList = callback;
+    }
+    bindRefreshBindDeleteToDo(callback){
+        this.reRefreshBindDeleteToDo = callback;
+        /*
+        ()=> this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)});
+        * */
     }
 
 }
@@ -183,6 +191,7 @@ class View {
                 todoUnOrderedList.appendChild(todoElm);
             })
         }
+
     }
 
 
@@ -194,18 +203,20 @@ class Controller {
         this.model = model;
         this.view = view;
         this.view.bindAddToDo((tobj) => { return this.model.addToDo(tobj)});
-        this.refreshToDoList(this.model.getToDos());
+        this.refreshToDoList();
         this.model.bindRefreshToDoList(this.refreshToDoList);
-        this.view.bindDeleteToDo((todoId) => {return this.model.deleteToDo(todoId)});
+        this.refreshBindDeleteToDo();
+        this.model.bindRefreshBindDeleteToDo(this.refreshBindDeleteToDo);
     }
 
-        refreshToDoList = (todos)=>{
-            this.view.listToDos(todos);
-        }
+        refreshToDoList = ()=>{
+            this.view.listToDos(this.model.getToDos());
+        };
+        refreshBindDeleteToDo = ()=> this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)});
 
-        refreshBindDeleteToDo(){
 
-        }
+
+
 
 
 }
