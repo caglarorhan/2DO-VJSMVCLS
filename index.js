@@ -25,7 +25,8 @@ class Model {
 
         this.todos.push(todo);
         localStorage.setItem('myToDos', JSON.stringify(this.todos));
-        localStorage.setItem('uid_const',parseInt(localStorage.getItem('uid_const'))+1);
+        localStorage.setItem('uid_const',(parseInt(localStorage.getItem('uid_const'))+1).toString());
+
         this.reRefreshToDoList();
         this.reRefreshBindDeleteToDo();
         return true;
@@ -63,6 +64,7 @@ class Model {
             let a_2 = this.todos.slice(todoIndex+1, this.todos.length);
             this.todos = a_1.concat(a_2);
             localStorage.setItem('myToDos', JSON.stringify(this.todos));
+            localStorage.setItem('uid_const',(parseInt(localStorage.getItem('uid_const'))-1).toString());
             this.reRefreshToDoList();
             this.reRefreshBindDeleteToDo();
             return true;
@@ -81,9 +83,6 @@ class Model {
     }
     bindRefreshBindDeleteToDo(callback){
         this.reRefreshBindDeleteToDo = callback;
-        /*
-        ()=> this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)});
-        * */
     }
 
 }
@@ -145,11 +144,16 @@ class View {
     bindAddToDo(handler){
         this.addToDoButton.addEventListener('click', async ()=>{
             let todoLists = await handler({header:this._thisName, info:this._thisInfo});
+            if(todoLists){
+                this.todoName.value='';
+                this.todoInfo.value='';
+                this.todoName.focus();
+            }
         });
     }
 
     bindDeleteToDo(handler){
-        let links = document.querySelectorAll('a.todoLink');
+        let links = document.querySelectorAll('button.todoLink');
         links.forEach((theLink)=>{
             theLink.addEventListener('click',async ()=>{
                  let responseFromProcess = await handler(theLink.dataset.id);
@@ -161,6 +165,17 @@ class View {
         })
     }
 
+    bindDoneToDo(handler){
+        let doneChecks = document.querySelectorAll('input.todoDone');
+        doneChecks.forEach((oCheckBox)=>{
+            oCheckBox.addEventListener('click',async ()=>{
+                let responseFromProcess = await handler(oCheckBox.dataset.id);
+                if(responseFromProcess){
+                    console.log('Condition changed!');
+                }
+            })
+        })
+    }
 
     listToDos(toDoList){
         let listContainer;
@@ -187,7 +202,7 @@ class View {
             listContainer.appendChild(todoUnOrderedList);
             toDoList.forEach((todo)=>{
                 let todoElm = document.createElement('li');
-                todoElm.innerHTML = `<input type="checkbox" ${todo.completed?"checked":''}> : <b>${todo.header}</b> <i>${todo.info} </i> <a class="todoLink" href="void:0" data-id="${todo.id}">DELETE</a>`;
+                todoElm.innerHTML = `<input type="checkbox" ${todo.completed?"checked":''} class="todoDone" data-id="${todo.id}"> : <b>${todo.header}</b> <i>${todo.info} </i> <button class="todoLink" data-id="${todo.id}">DELETE</button>`;
                 todoUnOrderedList.appendChild(todoElm);
             })
         }
@@ -203,16 +218,15 @@ class Controller {
         this.model = model;
         this.view = view;
         this.view.bindAddToDo((tobj) => { return this.model.addToDo(tobj)});
-        this.refreshToDoList();
-        this.model.bindRefreshToDoList(this.refreshToDoList);
-        this.refreshBindDeleteToDo();
-        this.model.bindRefreshBindDeleteToDo(this.refreshBindDeleteToDo);
-    }
 
-        refreshToDoList = ()=>{
             this.view.listToDos(this.model.getToDos());
-        };
-        refreshBindDeleteToDo = ()=> this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)});
+
+        this.model.bindRefreshToDoList(()=>{
+            this.view.listToDos(this.model.getToDos());
+        });
+         this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)});
+        this.model.bindRefreshBindDeleteToDo(()=> this.view.bindDeleteToDo((todoId) => {this.model.deleteToDo(todoId)}));
+    }
 
 
 
